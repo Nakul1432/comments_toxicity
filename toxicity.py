@@ -11,26 +11,26 @@ import numpy as np
 import pandas as pd
 from sentence_transformers import util
 
-#ldata
+
 df = pd.read_csv(r"C:\Users\nakul\Downloads\toxicity_en.csv")
-# Split your training data into hate and not-hate
+
 
 hate_sentences = df[df['is_toxic'].str.lower() == 'toxic']['text'].tolist()
 not_hate_sentences = df[df['is_toxic'].str.lower() == 'not toxic']['text'].tolist()
 
 
-# Encode with BERT
+
 
 
 from sentence_transformers import SentenceTransformer
 
-#loading model
-model = SentenceTransformer('all-MiniLM-L6-v2')  # This is a small but effective model
+
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
 hate_embeddings = model.encode(hate_sentences)
 not_hate_embeddings = model.encode(not_hate_sentences)
 
-#encoding
+
 X = model.encode(df['text'].tolist(), show_progress_bar=True)
 y = df['is_toxic']
 
@@ -38,14 +38,13 @@ y = df['is_toxic']
 
 
 
-#training
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 lr = LogisticRegression()
 lr.fit(X_train, y_train)
 
-# Evaluate
+
 y_pred = lr.predict(X_test)
-#print(classification_report(y_test, y_pred))
+print(classification_report(y_test, y_pred))
 
 
 
@@ -66,18 +65,18 @@ ensemble = VotingClassifier(estimators=[
 ensemble.fit(X_train, y_train)
 
 y_pred2 = ensemble.predict(X_test)
-#print(classification_report(y_test, y_pred2))
+print(classification_report(y_test, y_pred2))
 
 
 
 
 def clean_text(text):
     text = text.lower()
-    text = re.sub(r'http\S+', '', text)            #remove urls
-    text = re.sub(r'@\w+', '', text)               #remove mentions
-    text = re.sub(r'#\w+', '', text)               #remove hashtags
-    text = re.sub(r'\d+', '', text)                #remove numbers
-    text = text.translate(str.maketrans('', '', string.punctuation))  #remove punctuation
+    text = re.sub(r'http\S+', '', text)            
+    text = re.sub(r'@\w+', '', text)               
+    text = re.sub(r'#\w+', '', text)
+    text = re.sub(r'\d+', '', text)                
+    text = text.translate(str.maketrans('', '', string.punctuation))
     text = re.sub(r'\s+', ' ', text).strip()
     return text
 
@@ -85,7 +84,7 @@ def predict_text(text):
     clean = clean_text(text)
     embedding = model.encode([clean])
 
-    model_prob = lr.predict_proba(embedding)[0]  # [not_hate, hate]
+    model_prob = lr.predict_proba(embedding)[0]  
     
     
 
@@ -99,17 +98,15 @@ def predict_text(text):
     else:
         adj_hate = model_prob[1] - hate_similarity
         adj_not_hate = model_prob[0] + not_hate_similarity 
-   #adjusting
-
+   
     
 
-    #normalize
+    
     total = adj_hate + adj_not_hate
     adj_hate /= total
     adj_not_hate /= total
 
     result = "Hate Speech" if adj_hate > adj_not_hate else "Not Hate"  
-    #result = "Hate Speech" if prob[1] > 0.5 else "Not Hate"
     return result
 
 
