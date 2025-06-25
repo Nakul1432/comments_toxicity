@@ -96,7 +96,7 @@ def predict_text(text):
         adj_hate = model_prob[1] + hate_similarity
         adj_not_hate = model_prob[0] - not_hate_similarity
     else:
-        adj_hate = model_prob[1] - hate_similarity
+        adj_hate = model_prob[1] - not_hate_similarity
         adj_not_hate = model_prob[0] + not_hate_similarity 
    
     
